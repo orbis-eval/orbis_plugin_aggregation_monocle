@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 __name__ = "orbis_plugin_aggregation_monocle"
-__version__ = "1.1.dev0"
+__version__ = "2.1.2"
 __author__ = "fabod"
 __year__ = "2019"
 __description__ = "The monocle aggregation plugin for Orbis"

@@ -19,14 +19,14 @@ class Main(object):
 
     @classmethod
     def build_source_path(cls, file_name: str, resource_type: str) -> str:
-        file_path = os.path.abspath(os.path.join(os.path.join(app.paths.data_dir, f"{resource_type}s")))
+        file_path = os.path.abspath(os.path.join(os.path.join(app.paths.user_dir, f"{resource_type}s")))
         source_file = os.path.join(file_path, file_name + ".xz")
         return source_file
 
     @classmethod
     @cli.print_loading("lense", with_runtime=True)
     def load_lense(cls, file_names: list = False, refresh: bool = False) -> dict:
-        file_path = os.path.abspath(os.path.join(os.path.join(app.paths.data_dir, f"{'lense'}s")))
+        file_path = os.path.abspath(os.path.join(os.path.join(app.paths.user_dir, f"{'lense'}s")))
         lense_dict = {}
         for file_name in file_names:
             pickle_file = os.path.join(file_path, file_name + ".pickle")
@@ -46,7 +46,7 @@ class Main(object):
     @classmethod
     @cli.print_loading("mapping", with_runtime=True)
     def load_mapping(cls, file_names=False, refresh=False) -> dict:
-        file_path = os.path.abspath(os.path.join(os.path.join(app.paths.data_dir, f"{'mapping'}s")))
+        file_path = os.path.abspath(os.path.join(os.path.join(app.paths.user_dir, f"{'mapping'}s")))
         mapping_dict = {}
         for file_name in file_names:
             pickle_file = os.path.join(file_path, file_name + ".pickle")
@@ -66,7 +66,7 @@ class Main(object):
     @classmethod
     @cli.print_loading("filter", with_runtime=True)
     def load_filter(cls, file_names=False, refresh=False) -> dict:
-        file_path = os.path.abspath(os.path.join(os.path.join(app.paths.data_dir, f"{'filter'}s")))
+        file_path = os.path.abspath(os.path.join(os.path.join(app.paths.user_dir, f"{'filter'}s")))
         filter_dict = {}
         for file_name in file_names:
             pickle_file = os.path.join(file_path, file_name + ".pickle")
@@ -154,7 +154,7 @@ class Main(object):
                 # source_file_ending = ".txt" if resource_type == "filters" else ".xz"
                 source_file_ending = ".xz"
                 if config["aggregation"]["input"].get(resource_type):
-                    file_path = os.path.abspath(os.path.join(os.path.join(app.paths.data_dir, "{}".format(resource_type))))
+                    file_path = os.path.abspath(os.path.join(os.path.join(app.paths.user_dir, "{}".format(resource_type))))
                     for file_name in config["aggregation"]["input"][resource_type]:
                         pickle_file = os.path.abspath(os.path.join(file_path, file_name + pickel_file_ending))
                         source_file = os.path.abspath(os.path.join(file_path, file_name + source_file_ending))
