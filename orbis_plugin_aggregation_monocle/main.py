@@ -147,7 +147,7 @@ class Main(object):
         app.logger.info("Checking for resources")
         resource_file_names = {"lenses": [], "mappings": [], "filters": []}
         for config in configs:
-            app.logger.debug("Loading config file: {}".format(config["file_name"]))
+            app.logger.debug("Loading config file: {}".format(config.get("file_name", None)))
             for resource_type in ["lenses", "mappings", "filters"]:
                 app.logger.debug("Working on: {}".format(resource_type))
                 pickel_file_ending = ".pickle"
@@ -175,22 +175,22 @@ class Main(object):
                             app.logger.debug("Pickle for {} found".format(resource_type))
                     resource_file_names[resource_type].append(file_name)
                 else:
-                    app.logger.debug("No {} resources needed: {}".format(resource_type, config["file_name"]))
+                    app.logger.debug("No {} resources needed: {}".format(resource_type, config.get("file_name", None)))
         if len(resource_file_names["lenses"]) >= 0:
             file_names = resource_file_names["lenses"]
             app.lenses = cls.load_lense(file_names=file_names)
         else:
-            app.logger.debug("No lenses needed for {}".format(config["file_name"]))
+            app.logger.debug("No lenses needed for {}".format(config.get("file_name", None)))
         if len(resource_file_names["mappings"]) >= 0:
             file_names = resource_file_names["mappings"]
             app.mappings = cls.load_mapping(file_names=file_names)
         else:
-            app.logger.debug("No mappings needed for {}".format(config["file_name"]))
+            app.logger.debug("No mappings needed for {}".format(config.get("file_name", None)))
         if len(resource_file_names["filters"]) >= 0:
             file_names = resource_file_names["filters"]
             app.filters = cls.load_filter(file_names=file_names)
         else:
-            app.logger.debug("No filters needed for {}".format(config["file_name"]))
+            app.logger.debug("No filters needed for {}".format(config.get("file_name", None)))
 
     @classmethod
     def apply_lense(cls, lense: dict, key: str) -> bool:
