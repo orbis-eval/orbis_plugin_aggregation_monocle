@@ -125,6 +125,7 @@ class Main(object):
                 entity = entity.replace("http://en.wikipedia.org/wiki/", "http://dbpedia.org/resource/")
                 entity = entity.replace(" ", "_")
                 entity_list_dict[str(entity)] = True
+
         with open(source_dir.rstrip(".xz") + ".pickle", "wb") as open_file:
             pickle.dump(entity_list_dict, open_file, pickle.HIGHEST_PROTOCOL)
 
@@ -214,3 +215,8 @@ class Main(object):
             app.logger.debug(f"{key} remapped to {mapping[key]}")
             key = mapping[key]
         return key
+
+"""
+    @classmethod
+    def apply_eraser(cls, lense: dict, key: str) -> str:
+"""
