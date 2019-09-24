@@ -10,12 +10,38 @@ from urllib.parse import unquote_plus
 from orbis_eval import app
 from orbis_eval.libs import cli
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class Main(object):
     """docstring for Main"""
 
     def __init__(self):
         super(Main, self).__init__()
+
+    @classmethod
+    def run_monocle(cls, entities, data):
+        result = []
+
+        for item in entities:
+
+            in_lense = True
+            to_filter = False
+
+            if data.get("mapping"):
+                item["key"] = cls.apply_mapping(data["mapping"], item["key"])
+
+            if data.get("lense"):
+                in_lense = cls.apply_lense(data["lense"], item["key"])
+
+            if data.get("str_filter"):
+                to_filter = cls.apply_filter(data["str_filter"], item["surfaceForm"])
+
+            if in_lense or not to_filter:
+                result.append(item)
+
+        return result
 
     @classmethod
     def build_source_path(cls, file_name: str, resource_type: str) -> str:
@@ -36,7 +62,7 @@ class Main(object):
             if refresh or not already_converted:
                 if not source_available:
                     raise RuntimeError(f"No Source to convert found {source_file}")
-                app.logger.info("Converting lense to pickle")
+                logger.info("Converting lense to pickle")
                 cls.convert_lense(source_file)
             with open(pickle_file, "rb") as pickle_file:
                 new_lense_dict = pickle.load(pickle_file)
@@ -56,7 +82,7 @@ class Main(object):
             if refresh or not already_converted:
                 if not source_available:
                     raise RuntimeError(f"No Source to convert found {source_file}")
-                app.logger.info("Converting Mapping to pickle")
+                logger.info("Converting Mapping to pickle")
                 cls.convert_mapping(source_file)
             with open(pickle_file, "rb") as pickle_file:
                 new_mapping_dict = pickle.load(pickle_file)
@@ -76,7 +102,7 @@ class Main(object):
             if refresh or not already_converted:
                 if not source_available:
                     raise RuntimeError(f"No Source to convert found {source_file}")
-                app.logger.info("Converting filter to pickle")
+                logger.info("Converting filter to pickle")
                 cls.convert_filter(source_file)
             with open(pickle_file, "rb") as pickle_file:
                 new_filter_dict = pickle.load(pickle_file)
@@ -144,12 +170,13 @@ class Main(object):
 
     @classmethod
     def check_resources(cls, configs, refresh=False):
-        app.logger.info("Checking for resources")
+        logger.info("Checking for resources")
         resource_file_names = {"lenses": [], "mappings": [], "filters": []}
+
         for config in configs:
-            app.logger.debug("Loading config file: {}".format(config.get("file_name", None)))
+            logger.debug("Loading config file: {}".format(config.get("file_name", None)))
             for resource_type in ["lenses", "mappings", "filters"]:
-                app.logger.debug("Working on: {}".format(resource_type))
+                logger.debug("Working on: {}".format(resource_type))
                 pickel_file_ending = ".pickle"
                 # source_file_ending = ".txt" if resource_type == "filters" else ".xz"
                 source_file_ending = ".xz"
@@ -162,41 +189,43 @@ class Main(object):
                         source_available = os.path.isfile(source_file)
                         if refresh or not already_converted:
                             if refresh:
-                                app.logger.debug("Reconverting {} because of refresh request".format(resource_type))
+                                logger.debug("Reconverting {} because of refresh request".format(resource_type))
                             if not already_converted:
-                                app.logger.debug("Reconverting {} because pickle not found: {}".format(resource_type, pickle_file))
+                                logger.debug("Reconverting {} because pickle not found: {}".format(resource_type, pickle_file))
                             if not source_available:
                                 # msg = "No Source to convert found: {}".format(config["aggregation"]["input"].get(resource_type))
                                 msg = "No Source to convert found: {}".format(source_file)
                                 raise RuntimeError(msg)
-                            app.logger.debug("Converting {} to pickle: {}".format(resource_type, source_file))
+                            logger.debug("Converting {} to pickle: {}".format(resource_type, source_file))
                             cls.convert_resources(source_file, resource_type)
                         else:
-                            app.logger.debug("Pickle for {} found".format(resource_type))
+                            logger.debug("Pickle for {} found".format(resource_type))
                     resource_file_names[resource_type].append(file_name)
                 else:
-                    app.logger.debug("No {} resources needed: {}".format(resource_type, config.get("file_name", None)))
+                    logger.debug("No {} resources needed: {}".format(resource_type, config.get("file_name", None)))
         if len(resource_file_names["lenses"]) >= 0:
             file_names = resource_file_names["lenses"]
             app.lenses = cls.load_lense(file_names=file_names)
         else:
-            app.logger.debug("No lenses needed for {}".format(config.get("file_name", None)))
+            logger.debug("No lenses needed for {}".format(config.get("file_name", None)))
+
         if len(resource_file_names["mappings"]) >= 0:
             file_names = resource_file_names["mappings"]
             app.mappings = cls.load_mapping(file_names=file_names)
         else:
-            app.logger.debug("No mappings needed for {}".format(config.get("file_name", None)))
+            logger.debug("No mappings needed for {}".format(config.get("file_name", None)))
+
         if len(resource_file_names["filters"]) >= 0:
             file_names = resource_file_names["filters"]
             app.filters = cls.load_filter(file_names=file_names)
         else:
-            app.logger.debug("No filters needed for {}".format(config.get("file_name", None)))
+            logger.debug("No filters needed for {}".format(config.get("file_name", None)))
 
     @classmethod
     def apply_lense(cls, lense: dict, key: str) -> bool:
         in_lense = True
         if lense and key not in lense:
-            app.logger.debug(f"Not in lense: {key}")
+            logger.debug(f"Not in lense: {key}")
             in_lense = False
         return in_lense
 
@@ -204,13 +233,13 @@ class Main(object):
     def apply_filter(cls, str_filter: dict, surface_form: str) -> bool:
         in_filter = False
         if str_filter and surface_form in str_filter:
-            app.logger.debug("{} will be filtered".format(surface_form))
+            logger.debug("{} will be filtered".format(surface_form))
             in_filter = True
         return in_filter
 
     @classmethod
     def apply_mapping(cls, mapping: dict, key: str) -> str:
         if mapping and mapping.get(key):
-            app.logger.debug(f"{key} remapped to {mapping[key]}")
+            logger.debug(f"{key} remapped to {mapping[key]}")
             key = mapping[key]
         return key
