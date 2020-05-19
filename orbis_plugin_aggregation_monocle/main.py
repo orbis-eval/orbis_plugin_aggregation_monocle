@@ -7,7 +7,7 @@ import lzma
 import html
 from urllib.parse import unquote_plus
 
-from orbis_eval import app
+from orbis_eval.core import app
 from orbis_eval.libs import cli
 
 import logging
